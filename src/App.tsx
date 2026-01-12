@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Header, PokemonList, Subheader } from "./components";
 import { Submenu } from "./components/Submenu/Submenu";
+import { useFavorites } from "./hooks/useFavorites";
 import { type Pokemon, pokemonService } from "./services/pokemonService";
 
 const App: React.FC = () => {
@@ -8,25 +9,35 @@ const App: React.FC = () => {
   const [filteredPokemons, setFilteredPokemons] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isFiltered, setIsFiltered] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [page, setPage] = useState(0);
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
     loadPokemons(20, page);
   }, []);
 
-  const loadPokemons = async (limit: number, offset: number) => {
+  const loadPokemons = async (limit: number, offset: number, type?: string) => {
     try {
       if (offset === 0) {
         setLoading(true);
       } else {
         setLoadingMore(true);
       }
-      const data = await pokemonService.getPokemons(limit, offset);
+      const data = await pokemonService.getPokemons(limit, offset, type);
       if (!data.length) return;
 
-      setPokemons([...pokemons, ...data]);
-      setFilteredPokemons([...filteredPokemons, ...data]);
+      if (type) {
+        setIsFiltered(true);
+        setPage(0);
+        setPokemons(data);
+        setFilteredPokemons(data);
+      } else {
+        setIsFiltered(false);
+        setPokemons([...pokemons, ...data]);
+        setFilteredPokemons([...filteredPokemons, ...data]);
+      }
     } catch (error) {
       console.error("Erro ao carregar pokémons:", error);
     } finally {
@@ -38,6 +49,7 @@ const App: React.FC = () => {
   const handleSearch = (query: string) => {
     if (!query.trim()) {
       setFilteredPokemons(pokemons);
+      setIsFiltered(false);
       return;
     }
 
@@ -47,6 +59,7 @@ const App: React.FC = () => {
         pokemon.id.toString().includes(query)
     );
     setFilteredPokemons(filtered);
+    setIsFiltered(true);
   };
 
   return (
@@ -57,6 +70,7 @@ const App: React.FC = () => {
           onSearch={handleSearch}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          loadPokemons={loadPokemons}
         />
       </div>
       <div className="fixed bottom-0 w-full z-10 bg-white md:hidden lg:hidden shadow-t-md">
@@ -68,7 +82,7 @@ const App: React.FC = () => {
           const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
           const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
 
-          if (isNearBottom && !loading && !loadingMore) {
+          if (isNearBottom && !loading && !loadingMore && !isFiltered) {
             setPage(page + 20);
             loadPokemons(20, page + 20);
           }
@@ -77,7 +91,7 @@ const App: React.FC = () => {
           const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
           const isNearBottom = scrollTop + clientHeight >= scrollHeight - 200;
 
-          if (isNearBottom && !loading && !loadingMore) {
+          if (isNearBottom && !loading && !loadingMore && !isFiltered) {
             setPage(page + 20);
             loadPokemons(20, page + 20);
           }
@@ -85,7 +99,12 @@ const App: React.FC = () => {
       >
         {activeTab === "all" && (
           <>
-            <PokemonList pokemons={filteredPokemons} loading={loading} />
+            <PokemonList
+              pokemons={filteredPokemons}
+              loading={loading}
+              favoritesIds={favorites.map((p) => p.id)}
+              onToggleFavorite={(pokemon) => toggleFavorite(pokemon)}
+            />
             {loadingMore && (
               <div className="text-center text-lg text-gray-600 py-4">
                 Carregando mais Pokémons...
@@ -95,7 +114,14 @@ const App: React.FC = () => {
         )}
 
         {activeTab === "favorites" && (
-          <div className="p-4">Favorites Tab Content</div>
+          <>
+            <PokemonList
+              pokemons={favorites}
+              loading={false}
+              favoritesIds={favorites.map((p) => p.id)}
+              onToggleFavorite={(pokemon) => toggleFavorite(pokemon)}
+            />
+          </>
         )}
       </div>
     </div>

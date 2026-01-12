@@ -14,6 +14,7 @@ import {
   Ice,
   Normal,
   Poison,
+  Pokeheart,
   Psychic,
   Rock,
   Steel,
@@ -50,9 +51,11 @@ interface PokemonCardProps {
   name: string;
   image: string;
   types: string[];
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
-const typeColors: Record<string, string> = {
+export const typeColors: Record<string, string> = {
   normal: "bg-[#919AA2]",
   fire: "bg-[#FF9D55]",
   water: "bg-[#5090D6]",
@@ -74,84 +77,32 @@ const typeColors: Record<string, string> = {
 };
 
 const typeIcons: Record<string, { background: string; icon: string }> = {
-  normal: {
-    background: NormalWhite,
-    icon: Normal,
-  },
-  fire: {
-    background: FireWhite,
-    icon: Fire,
-  },
-  water: {
-    background: WaterWhite,
-    icon: Water,
-  },
-  electric: {
-    background: ElectricWhite,
-    icon: Electric,
-  },
-  grass: {
-    background: GrassWhite,
-    icon: Grass,
-  },
-  ice: {
-    background: IceWhite,
-    icon: Ice,
-  },
-  fighting: {
-    background: FightingWhite,
-    icon: Fighting,
-  },
-  poison: {
-    background: PoisonWhite,
-    icon: Poison,
-  },
-  ground: {
-    background: GroundWhite,
-    icon: Ground,
-  },
-  flying: {
-    background: FlyingWhite,
-    icon: Flying,
-  },
-  psychic: {
-    background: PsychicWhite,
-    icon: Psychic,
-  },
-  bug: {
-    background: BugWhite,
-    icon: Bug,
-  },
-  rock: {
-    background: RockWhite,
-    icon: Rock,
-  },
-  ghost: {
-    background: GhostWhite,
-    icon: Ghost,
-  },
-  dragon: {
-    background: DragonWhite,
-    icon: Dragon,
-  },
-  dark: {
-    background: DarkWhite,
-    icon: Dark,
-  },
-  steel: {
-    background: SteelWhite,
-    icon: Steel,
-  },
-  fairy: {
-    background: FairyWhite,
-    icon: Fairy,
-  },
+  normal: { background: NormalWhite, icon: Normal },
+  fire: { background: FireWhite, icon: Fire },
+  water: { background: WaterWhite, icon: Water },
+  electric: { background: ElectricWhite, icon: Electric },
+  grass: { background: GrassWhite, icon: Grass },
+  ice: { background: IceWhite, icon: Ice },
+  fighting: { background: FightingWhite, icon: Fighting },
+  poison: { background: PoisonWhite, icon: Poison },
+  ground: { background: GroundWhite, icon: Ground },
+  flying: { background: FlyingWhite, icon: Flying },
+  psychic: { background: PsychicWhite, icon: Psychic },
+  bug: { background: BugWhite, icon: Bug },
+  rock: { background: RockWhite, icon: Rock },
+  ghost: { background: GhostWhite, icon: Ghost },
+  dragon: { background: DragonWhite, icon: Dragon },
+  dark: { background: DarkWhite, icon: Dark },
+  steel: { background: SteelWhite, icon: Steel },
+  fairy: { background: FairyWhite, icon: Fairy },
 };
 export const PokemonCard: React.FC<PokemonCardProps> = ({
   id,
   name,
   image,
   types,
+  isFavorite = false,
+  onToggleFavorite,
 }) => {
   const [openModal, setOpenModal] = React.useState(false);
   const [evolutionChain, setEvolutionChain] = React.useState<EvolutionChain[]>(
@@ -176,12 +127,33 @@ export const PokemonCard: React.FC<PokemonCardProps> = ({
   return (
     <>
       <div
-        className="flex justify-between bg-white shadow-md text-center transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-xl w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg h-24 sm:h-28 md:h-32 rounded-2xl"
+        className="flex justify-between bg-white shadow-md text-center transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-xl w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg h-24 sm:h-28 md:h-32 rounded-2xl relative"
         style={{
           opacity: 1,
         }}
         onClick={handleOpenModal}
       >
+        <button
+          aria-label={
+            isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"
+          }
+          title={
+            isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"
+          }
+          className={`z-2 absolute top-2 right-2 flex items-center justify-center w-8 h-8 rounded-full shadow ${
+            isFavorite ? "bg-red-100 ring-2 ring-red-400" : "bg-white"
+          } hover:bg-gray-100`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite && onToggleFavorite();
+          }}
+        >
+          <img
+            src={Pokeheart}
+            alt={isFavorite ? "Favorito" : "Não favorito"}
+            className={`w-5 h-5 ${isFavorite ? "opacity-100" : "opacity-60"}`}
+          />
+        </button>
         <div className="flex flex-col justify-center text-left p-4">
           <div className="text-xs text-gray-600 font-bold mb-1">
             Nº{id.toString().padStart(3, "0")}

@@ -35,29 +35,37 @@ export interface EvolutionChain {
 export const pokemonService = {
   async getPokemons(
     limit: number = 20,
-    offset: number = 20
+    offset: number = 20,
+    type?: string
   ): Promise<Pokemon[]> {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/pokemon?limit=${limit}&offset=${offset}`
-      );
+      const route = type
+        ? `${API_BASE_URL}/type/${type}`
+        : `${API_BASE_URL}/pokemon?limit=${limit}&offset=${offset}`;
+
+      const response = await fetch(route);
       const data = await response.json();
 
-      const pokemonPromises = data.results.map(
-        async (pokemon: { url: string }) => {
-          const pokemonResponse = await fetch(pokemon.url);
-          const pokemonData = await pokemonResponse.json();
+      const resp = type
+        ? data.pokemon.map((p: any) => p.pokemon)
+        : data.results;
 
-          return {
-            id: pokemonData.id,
-            name: pokemonData.name,
-            image:
-              pokemonData.sprites.other["official-artwork"].front_default ||
-              pokemonData.sprites.front_default,
-            types: pokemonData.types.map((t: any) => t.type.name),
-          };
-        }
-      );
+      console.log(resp);
+
+      const pokemonPromises = resp.map(async (pokemon: { url: string }) => {
+        console.log(pokemon);
+        const pokemonResponse = await fetch(pokemon.url);
+        const pokemonData = await pokemonResponse.json();
+
+        return {
+          id: pokemonData.id,
+          name: pokemonData.name,
+          image:
+            pokemonData.sprites.other["official-artwork"].front_default ||
+            pokemonData.sprites.front_default,
+          types: pokemonData.types.map((t: any) => t.type.name),
+        };
+      });
 
       return await Promise.all(pokemonPromises);
     } catch (error) {
@@ -168,6 +176,17 @@ export const pokemonService = {
     } catch (error) {
       console.error("Erro ao buscar cadeia de evolução:", error);
       return [];
+    }
+  },
+
+  async getPokemonsTypes(): Promise<string[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/type`);
+      const data = await response.json();
+      return data.results.map((type: { name: string }) => type.name);
+    } catch (error) {
+      console.error("Erro ao buscar tipos de pokémons:", error);
+      throw error;
     }
   },
 };

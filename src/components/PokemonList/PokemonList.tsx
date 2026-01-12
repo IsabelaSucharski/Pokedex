@@ -11,11 +11,15 @@ interface Pokemon {
 interface PokemonListProps {
   pokemons: Pokemon[];
   loading?: boolean;
+  favoritesIds?: number[];
+  onToggleFavorite?: (pokemon: Pokemon) => void;
 }
 
 export const PokemonList: React.FC<PokemonListProps> = ({
   pokemons,
   loading = false,
+  favoritesIds = [],
+  onToggleFavorite,
 }) => {
   if (loading) {
     return (
@@ -42,6 +46,8 @@ export const PokemonList: React.FC<PokemonListProps> = ({
           name={pokemon.name}
           image={pokemon.image}
           types={pokemon.types}
+          isFavorite={favoritesIds.includes(pokemon.id)}
+          onToggleFavorite={() => onToggleFavorite?.(pokemon)}
         />
       ))}
     </div>
