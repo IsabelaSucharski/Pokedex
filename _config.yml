@@ -1,0 +1,26 @@
+# Site settings
+title: "Pokedex"
+description: "Uma aplicação para explorar Pokémons"
+url: "https://isabelasucharski.github.io"
+baseurl: "/Pokedex"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor/
+  - .bundle/
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - .bundle
